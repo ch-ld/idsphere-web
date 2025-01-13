@@ -49,6 +49,7 @@
 
 <script>
 import { getPathList } from '@/api/system/path'
+import { deleteSubMenu, updateSubMenuSort } from '@/api/system/menu'
 import SubMenuPathListTable from './menu-path'
 
 export default {
@@ -82,12 +83,32 @@ export default {
 
     /* 编辑按钮 */
     handleEdit(value) {
-      this.$emit('edit', value)
+      // 确保设置正确的类型和父菜单ID
+      const editData = { ...value, type: 1 }
+      // 向上传递编辑事件
+      this.$emit('edit', editData)
     },
 
     /* 删除按钮 */
-    handleDelete(value) {
-      this.$emit('delete', value)
+    handleDelete(row) {
+      this.$confirm('确认删除该子菜单?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteSubMenu(row.id).then(res => {
+          this.$message.success('删除成功')
+          this.$emit('refresh')
+        })
+      })
+    },
+    /* 更新排序 */
+    handleSort(row) {
+      const data = { sort: row.sort }
+      updateSubMenuSort(row.id, data).then(res => {
+        this.$message.success('排序更新成功')
+        this.$emit('refresh')
+      })
     },
 
     /* 获取数据 */

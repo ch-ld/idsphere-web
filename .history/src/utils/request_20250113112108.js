@@ -33,7 +33,7 @@ service.interceptors.response.use(
     const res = response.data
 
     // 业务状态码为非0的请求处理（0表示正常的业务状态码）
-    if (res.code !== 0 && res.code !== 200) {
+    if (res.code !== 0) {
       // 如果状态码为90514表示Token无效或Token过期，进行特殊处理
       if (res.code === 90514) {
         // 重新登录

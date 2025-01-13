@@ -13,7 +13,11 @@
     <el-table-column type="expand" width="40">
       <template slot-scope="props">
         <!-- 二级菜单 -->
-        <sub-menu-list-table :table-data="tableData[props.$index].SubMenus" />
+        <sub-menu-list-table
+          :table-data="tableData[props.$index].SubMenus"
+          @edit="handleSubMenuEdit"
+          @refresh="$emit('refresh')"
+        />
       </template>
     </el-table-column>
     <el-table-column prop="title" label="title" min-width="4%" />
@@ -33,6 +37,7 @@
 
 <script>
 import SubMenuListTable from './sub-menu'
+import { deleteMenu, updateMenuSort } from '@/api/system/menu'
 
 export default {
   name: 'MenuListTable',
@@ -53,21 +58,40 @@ export default {
     }
   },
   methods: {
-
+    // 添加二级菜单编辑处理方法
+    handleSubMenuEdit(value) {
+      // 直接向上传递编辑事件
+      this.$emit('edit', value)
+    },
     /* 编辑按钮 */
     handleEdit(value) {
-      // type=0表示为一级菜单，type=1表示为二级菜单
-      if (value.menu_id == null) {
-        value['type'] = 0
-      } else {
-        value['type'] = 1
-      }
-      this.$emit('edit', value)
+      // 确保设置正确的 type
+      const editData = { ...value }
+      editData.type = editData.menu_id ? 1 : 0
+      this.$emit('edit', editData)
     },
 
     /* 删除按钮 */
-    handleDelete(value) {
-      this.$emit('delete', value)
+    handleDelete(row) {
+      this.$confirm('确认删除该菜单?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteMenu(row.id).then(res => {
+          this.$message.success('删除成功')
+          this.$emit('refresh')
+        })
+      })
+    },
+
+    /* 更新排序 */
+    handleSort(row) {
+      const data = { sort: row.sort }
+      updateMenuSort(row.id, data).then(res => {
+        this.$message.success('排序更新成功')
+        this.$emit('refresh')
+      })
     },
 
     /* 确保同时只展开一行 */

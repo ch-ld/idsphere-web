@@ -138,8 +138,13 @@ export default {
   methods: {
     /* 打开表单 */
     handleTest() {
-      this.formTitle = '登录测试'
-      this.testDialog = true
+      this.$refs.form.validate(valid => {
+        if (!valid) {
+          return
+        }
+        this.formTitle = '登录测试'
+        this.testDialog = true
+      })
     },
 
     /* 更新密码按钮 */

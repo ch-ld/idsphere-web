@@ -7,7 +7,7 @@
         <div class="help-block" style="color: #999; font-size: 12px">登录《<a href="https://work.weixin.qq.com" target="_blank" style="color: #66b1ff">企业微信管理后台</a>》，在上方【我的企业】中获取。</div>
       </el-form-item>
       <el-form-item label="Agent ID" prop="wechatAgentId">
-        <el-input v-model="form.wechatAgentId" autocomplete="off" size="small" clearable style="width: 600px;" />
+        <el-input v-model.number="form.wechatAgentId" autocomplete="off" size="small" clearable style="width: 600px;" />
         <div class="help-block" style="color: #999; font-size: 12px">登录《<a href="https://work.weixin.qq.com" target="_blank" style="color: #66b1ff">企业微信管理后台</a>》，在创建的企业自建应用详情页中获取。</div>
       </el-form-item>
       <el-form-item label="Secret" prop="wechatSecret">
@@ -42,7 +42,8 @@ export default {
           { required: true, message: '请输入企业微信应用 CorpId', trigger: 'change' }
         ],
         wechatAgentId: [
-          { required: true, message: '请输入企业微信应用 AgentId', trigger: 'change' }
+          { required: true, message: '请输入企业微信应用 AgentId', trigger: 'change' },
+          { type: 'number', message: '请输入正确的 AgentId', trigger: 'change' }
         ],
         wechatSecret: [
           { required: false, message: '请输入企业微信应用 Secret', trigger: 'change' }
@@ -76,7 +77,7 @@ export default {
         const { wechatCorpId, wechatAgentId, wechatSecret } = this.form
         const data = {
           wechatCorpId: wechatCorpId,
-          wechatAgentId: wechatAgentId
+          wechatAgentId: String(wechatAgentId)
         }
         if (wechatSecret) {
           data.wechatSecret = wechatSecret

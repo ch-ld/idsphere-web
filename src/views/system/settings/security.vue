@@ -72,7 +72,13 @@ export default {
           return
         }
         const { mfa, issuer, secret, tokenExpiresTime } = this.form
-        this.$emit('submit', { mfa: mfa ? 'true' : 'false', issuer: issuer, secret: secret, tokenExpiresTime: tokenExpiresTime }, (result) => {})
+        const data = {
+          mfa: mfa ? 'true' : 'false',
+          issuer: issuer,
+          secret: secret,
+          tokenExpiresTime: String(tokenExpiresTime)
+        }
+        this.$emit('submit', data, (result) => {})
       })
     }
   }

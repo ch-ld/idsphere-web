@@ -29,7 +29,7 @@
           <security-form v-if="currentMenu === 'security'" :form="settings" @submit="handleSubmit" />
           <ldap-form v-if="currentMenu === 'ldap'" :form="settings" @submit="handleSubmit" />
           <password-form v-if="currentMenu === 'password'" :form="settings" @submit="handleSubmit" />
-          <Certificate-form v-if="currentMenu === 'certificate'" :form="settings" @submit="handleSubmit" />
+          <Certificate-form v-if="currentMenu === 'certificate'" :form="settings" @submit="handleSubmit" @sub="handleCertSubmit" />
           <sms-form v-if="currentMenu === 'sms'" :form="settings" @submit="handleSubmit" />
           <mail-form v-if="currentMenu === 'mail'" :form="settings" @submit="handleSubmit" />
           <dingtalk-form v-if="currentMenu === 'dingtalk'" :form="settings" @submit="handleSubmit" />
@@ -44,7 +44,7 @@
 
 <script>
 import { Message } from 'element-ui'
-import { getSettings, updateSettings } from '@/api/system/settings'
+import { getSettings, updateSettings, updateCert } from '@/api/system/settings'
 import SecurityForm from './security'
 import LdapForm from './ldap'
 import DingtalkForm from './dingtalk'
@@ -100,6 +100,24 @@ export default {
     /* 表单提交 */
     handleSubmit(data, callback) {
       updateSettings(data).then((res) => {
+        // 将执行的结果先返回给子组件
+        callback(res)
+
+        // 处理返回
+        if (res.code === 0) {
+          Message({
+            message: res.msg,
+            type: 'success',
+            duration: 1000
+          })
+          this.getSettings()
+        }
+      }, () => {})
+    },
+
+    /* 证书密钥更新 */
+    handleCertSubmit(data, callback) {
+      updateCert(data).then((res) => {
         // 将执行的结果先返回给子组件
         callback(res)
 

@@ -9,8 +9,8 @@
     >
       <slot name="description">
         <div>IDSphere 平台短信功能在用户重置密码和获取敏感数据时使用，是可选的，推荐短信模板如下：</div>
-        <div>华为云：您的验证码为：${code}，验证码在5分钟内有效，请勿泄漏他人！</div>
-        <div>阿里云：您的验证码为：${1}，验证码在5分钟内有效，请勿泄漏他人！</div>
+        <div>华为云：您的验证码为：${1}，验证码在5分钟内有效，请勿泄漏他人！</div>
+        <div>阿里云：您的验证码为：${code}，验证码在5分钟内有效，请勿泄漏他人！</div>
       </slot>
     </el-alert>
     <el-form ref="form" :model="form" :rules="rules" :validate-on-rule-change="false" status-icon label-position="top" label-width="100px">
@@ -145,23 +145,28 @@ export default {
 
     /* 发件测试 */
     handleTest() {
-      this.$confirm('点击确认短信默认发送至当前配置的手机号，短信发送状态请移步至【日志审计】-【短信记录】中查看', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-        showClose: false,
-        closeOnClickModal: false
-      }).then(() => {
-        sendSms().then((res) => {
-          if (res.code === 0) {
-            Message({
-              message: res.msg,
-              type: 'success',
-              duration: 1000
-            })
-          }
-        })
-      }).catch(() => {})
+      this.$refs.form.validate(valid => {
+        if (!valid) {
+          return
+        }
+        this.$confirm('点击确认短信默认发送至当前配置的手机号，短信发送状态请移步至【日志审计】-【短信记录】中查看', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+          showClose: false,
+          closeOnClickModal: false
+        }).then(() => {
+          sendSms().then((res) => {
+            if (res.code === 0) {
+              Message({
+                message: res.msg,
+                type: 'success',
+                duration: 1000
+              })
+            }
+          })
+        }).catch(() => {})
+      })
     },
 
     /* 获取回调接口 */

@@ -11,7 +11,7 @@ export function getSettings() {
 // 获取 Logo
 export function getLogo() {
   return request({
-    url: '/api/v1/settings/logo',
+    url: '/api/v1/settings/site/logo',
     method: 'get'
   })
 }
@@ -20,6 +20,15 @@ export function getLogo() {
 export function updateSettings(data) {
   return request({
     url: '/api/v1/settings',
+    method: 'put',
+    data
+  })
+}
+
+// 密钥及证书更换
+export function updateCert(data) {
+  return request({
+    url: '/api/v1/settings/cert',
     method: 'put',
     data
   })
@@ -38,6 +47,15 @@ export function sendMail(data) {
 export function sendSms(data) {
   return request({
     url: '/api/v1/settings/test/smsSend',
+    method: 'post',
+    data
+  })
+}
+
+// 密钥测试
+export function certTest(data) {
+  return request({
+    url: '/api/v1/settings/test/certTest',
     method: 'post',
     data
   })

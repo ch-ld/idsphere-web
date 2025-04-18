@@ -31,18 +31,60 @@
         </slot>
       </el-alert>
       <el-form-item label="证书" prop="certificate">
-        <el-input v-model="form.certificate" type="textarea" :rows="7" autocomplete="off" clearable style="width: 660px;padding-right: 10px;" />
-        <el-button type="primary" icon="el-icon-upload2" size="mini">证书上传</el-button>
+        <div style="display: flex; align-items: flex-end;">
+          <el-input v-model="form.certificate" type="textarea" :rows="7" autocomplete="off" clearable style="width: 660px;padding-right: 10px;" />
+          <el-upload
+            ref="certUpload"
+            class="upload-demo"
+            action=""
+            accept=".pem,.crt,.cer"
+            :multiple="false"
+            :limit="1"
+            :show-file-list="false"
+            :auto-upload="false"
+            :on-change="handleCertificateUpload"
+          >
+            <el-button slot="trigger" icon="el-icon-upload2" size="mini" type="primary">选取证书</el-button>
+          </el-upload>
+        </div>
         <div class="help-block" style="color: #999; font-size: 12px">证书文件通常以<span class="gray-bg">-----BEGIN CERTIFICATE-----</span>开头，以<span class="gray-bg">-----END CERTIFICATE-----</span>结尾。</div>
       </el-form-item>
       <el-form-item label="私钥（不能外泄的私有密钥）" prop="privateKey">
-        <el-input v-model="form.privateKey" type="textarea" :rows="7" autocomplete="off" clearable style="width: 660px;padding-right: 10px;" />
-        <el-button type="primary" icon="el-icon-upload2" size="mini">私钥上传</el-button>
+        <div style="display: flex; align-items: flex-end;">
+          <el-input v-model="form.privateKey" type="textarea" :rows="7" autocomplete="off" clearable style="width: 660px;padding-right: 10px;" />
+          <el-upload
+            ref="keyUpload"
+            class="upload-demo"
+            action=""
+            accept=".key,.pem"
+            :multiple="false"
+            :limit="1"
+            :show-file-list="false"
+            :auto-upload="false"
+            :on-change="handlePrivateKeyUpload"
+          >
+            <el-button slot="trigger" icon="el-icon-upload2" size="mini" type="primary">选取私钥</el-button>
+          </el-upload>
+        </div>
         <div class="help-block" style="color: #999; font-size: 12px">私钥文件通常以<span class="gray-bg">-----BEGIN PRIVATE KEY-----</span>开头，以<span class="gray-bg">-----END PRIVATE KEY-----</span>结尾。</div>
       </el-form-item>
       <el-form-item label="公钥（对外公开的密钥）" prop="publicKey">
-        <el-input v-model="form.publicKey" type="textarea" :rows="7" autocomplete="off" clearable style="width: 660px;padding-right: 10px;" />
-        <el-button type="primary" icon="el-icon-upload2" size="mini">公钥上传</el-button>
+        <div style="display: flex; align-items: flex-end;">
+          <el-input v-model="form.publicKey" type="textarea" :rows="7" autocomplete="off" clearable style="width: 660px;padding-right: 10px;" />
+          <el-upload
+            ref="keyUpload"
+            class="upload-demo"
+            action=""
+            accept=".pub,.pem"
+            :multiple="false"
+            :limit="1"
+            :show-file-list="false"
+            :auto-upload="false"
+            :on-change="handlePublicKeyUpload"
+          >
+            <el-button slot="trigger" icon="el-icon-upload2" size="mini" type="primary">选取公钥</el-button>
+          </el-upload>
+        </div>
         <div class="help-block" style="color: #999; font-size: 12px">公钥文件通常以<span class="gray-bg">-----BEGIN PUBLIC KEY-----</span>开头，以<span class="gray-bg">-----END PUBLIC KEY-----</span>结尾。</div>
       </el-form-item>
       <el-form-item>
@@ -104,6 +146,39 @@ export default {
           this.loading = false
         })
       })
+    },
+
+    /* 读取证书文件 */
+    handleCertificateUpload(file) {
+      const reader = new FileReader()
+      reader.onload = e => {
+        this.form.certificate = e.target.result.trim()
+      }
+      reader.readAsText(file.raw)
+      this.$refs.certUpload.clearFiles()
+      return false
+    },
+
+    /* 读取私钥文件 */
+    handlePrivateKeyUpload(file) {
+      const reader = new FileReader()
+      reader.onload = e => {
+        this.form.privateKey = e.target.result.trim()
+      }
+      reader.readAsText(file.raw)
+      this.$refs.keyUpload.clearFiles()
+      return false
+    },
+
+    /* 读取公钥文件 */
+    handlePublicKeyUpload(file) {
+      const reader = new FileReader()
+      reader.onload = e => {
+        this.form.publicKey = e.target.result.trim()
+      }
+      reader.readAsText(file.raw)
+      this.$refs.keyUpload.clearFiles()
+      return false
     },
 
     /* 提交表单 */

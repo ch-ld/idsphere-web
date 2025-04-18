@@ -14,11 +14,12 @@
       </slot>
     </el-alert>
     <el-form ref="form" :model="form" :rules="rules" :validate-on-rule-change="false" status-icon label-position="top" label-width="100px">
-      <el-form-item label="短信提供商" prop="smsProvider">
+      <el-form-item label="短信服务提供商" prop="smsProvider">
         <el-radio-group v-model="form.smsProvider">
           <el-radio label="huawei">华为云</el-radio>
           <el-radio label="aliyun">阿里云</el-radio>
         </el-radio-group>
+        <div class="help-block" style="color: #999; font-size: 12px">华为云短信将于2025年4月25日后暂停使用</div>
       </el-form-item>
       <el-row :gutter="20">
         <el-col :span="8">
@@ -27,7 +28,7 @@
           </el-form-item>
         </el-col>
         <el-col :span="16">
-          <el-form-item label="接入地址" prop="smsEndpoint">
+          <el-form-item label="API 接入地址" prop="smsEndpoint">
             <el-input v-model="form.smsEndpoint" autocomplete="off" size="small" clearable />
             <div class="help-block" style="color: #999; font-size: 12px">华为云参考《<a href="https://support.huaweicloud.com/api-msgsms/sms_05_0000.html#section1" target="_blank" style="color: #66b1ff">API 请求地址</a>》配置，阿里云参考《<a href="https://help.aliyun.com/zh/sms/developer-reference/api-dysmsapi-2017-05-25-endpoint" target="_blank" style="color: #66b1ff">短信服务接入点</a>》配置。</div>
           </el-form-item>
@@ -35,9 +36,9 @@
       </el-row>
       <el-row :gutter="20">
         <el-col :span="8">
-          <el-form-item label="通道号" prop="smsSender">
+          <el-form-item label="通道号">
             <el-input v-model="form.smsSender" autocomplete="off" size="small" clearable />
-            <div class="help-block" style="color: #999; font-size: 12px">当短信提供商为华为云时此项需要配置。</div>
+            <div class="help-block" style="color: #999; font-size: 12px">当短信服务提供商为华为云时需要提供此项配置。</div>
           </el-form-item>
         </el-col>
         <el-col :span="16">
@@ -59,9 +60,9 @@
           </el-form-item>
         </el-col>
       </el-row>
-      <el-form-item label="回调地址" prop="smsCallbackUrl">
+      <el-form-item label="回调地址">
         <el-input v-model="form.smsCallbackUrl" autocomplete="off" size="small" clearable />
-        <div class="help-block" style="color: #999; font-size: 12px">用于接收短信发送状态，当短信提供商为华为云时此项需要配置，API 接口路径为：/api/v1/sms/huawei/callback，点击《<el-link :underline="false" style="color: #66b1ff" @click="getCallbackUrl()">获取完整回调地址</el-link>》。</div>
+        <div class="help-block" style="color: #999; font-size: 12px">用于接收短信发送状态，当短信服务提供商为华为云时需要提供此项配置，API 接口路径为：/api/v1/sms/huawei/callback，点击《<el-link :underline="false" style="color: #66b1ff" @click="getCallbackUrl()">获取完整回调地址</el-link>》。</div>
       </el-form-item>
       <el-form-item>
         <div>
@@ -103,9 +104,6 @@ export default {
         smsEndpoint: [
           { required: true, message: '请输入短信接口地址', trigger: 'change' }
         ],
-        smsSender: [
-          { required: true, message: '请输入短信通道号', trigger: 'change' }
-        ],
         smsTemplateId: [
           { required: true, message: '请输入短信模板 ID', trigger: 'change' }
         ],
@@ -114,24 +112,11 @@ export default {
         ],
         smsAppSecret: [
           { required: false, message: '请输入短信 AppSecret', trigger: 'change' }
-        ],
-        smsCallbackUrl: [
-          { required: true, message: '请输入短信接口回调地址', trigger: 'change' }
         ]
       }
     }
   },
   watch: {
-    'form.SmsProvider'(val) {
-      if (val === 'huawei') {
-        this.rules.smsCallbackUrl[0].required = true
-        this.rules.smsSender[0].required = true
-      } else {
-        this.rules.smsCallbackUrl[0].required = false
-        this.rules.smsSender[0].required = false
-        this.$refs.form.clearValidate()
-      }
-    },
     'showPassword'(val) {
       if (val) {
         this.rules.smsAppSecret[0].required = true

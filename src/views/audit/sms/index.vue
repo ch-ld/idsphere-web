@@ -75,7 +75,7 @@ export default {
 
     /* page size变化 */
     handlePageSizeChange(newSize) {
-      this.queryParams.page_size = newSize
+      this.queryParams.limit = newSize
       this.getList()
     },
 

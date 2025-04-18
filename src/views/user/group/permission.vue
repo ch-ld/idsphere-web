@@ -18,8 +18,9 @@
                   highlight-current
                   :default-checked-keys="form.menus"
                   :expand-on-click-node="false"
-                  :check-on-click-node="true"
+                  :check-on-click-node="false"
                   :data="menus"
+                  @node-click="handleNodeClick"
                 />
               </div>
             </el-card>
@@ -30,8 +31,9 @@
                 <span>接口权限</span>
               </div>
               <div class="down-tree">
+                <div v-if="filteredPaths == undefined" class="help-block" style="color: #999; font-size: 14px">请点击左侧菜单显示对应接口权限</div>
                 <ul class="item">
-                  <li v-for="(item, index) in paths" :key="index">
+                  <li v-for="(item, index) in filteredPaths" :key="index">
                     <el-checkbox v-model="item.flag" :indeterminate="isIndeterminate(item)" @change="(val) => handleCheckAll(val, item)">{{ item.menu_name }}</el-checkbox>
                     <el-checkbox-group v-model="form.paths" class="checkbox-group" @change="() => handleChange(item)">
                       <el-checkbox v-for="path in item.paths" :key="path.id" :label="path.name" class="checkbox-group-item">{{ path.description }}</el-checkbox>
@@ -79,11 +81,28 @@ export default {
       type: Boolean
     }
   },
+  data() {
+    return {
+      filteredPaths: undefined
+    }
+  },
   created() {
     this.setNodes()
     this.updateCheckDataFlags()
   },
   methods: {
+
+    /* 接口权限过滤 */
+    handleNodeClick(data) {
+      let result = []
+      if (data.children && data.children.length > 0) {
+        result = data.children.map(child => child.label)
+      } else {
+        result = [data.label]
+      }
+      this.filteredPaths = this.paths.filter(item => result.includes(item.menu_name))
+    },
+
     /* 设置节点选中状态 */
     setNodes() {
       this.$nextTick(() => {

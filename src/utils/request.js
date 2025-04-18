@@ -30,8 +30,13 @@ service.interceptors.request.use(
 // 返回拦截器
 service.interceptors.response.use(
   response => {
-    const res = response.data
+    // 如果响应类型为application/zip，则直接返回响应，不进行后续处理
+    const contentType = response.headers['content-type']
+    if (contentType && contentType.includes('application/zip')) {
+      return response
+    }
 
+    const res = response.data
     // 业务状态码为非0的请求处理（0表示正常的业务状态码）
     if (res.code !== 0 && res.code !== 200) {
       // 如果状态码为90514表示Token无效或Token过期，进行特殊处理

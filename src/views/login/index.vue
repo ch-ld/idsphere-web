@@ -48,6 +48,8 @@
 
 <script>
 import { FeishuQrLogin } from '@/utils/feishu'
+import { saveToLocalStorage, getFromLocalStorage } from '@/utils/localStorage'
+import { isEnvEnabled } from '@/utils/env'
 import { Base64 } from 'js-base64'
 import { generateState } from '@/utils/generate-stata'
 import PasswordLoginForm from './password_login'
@@ -88,7 +90,7 @@ export default {
   },
   created() {
     // 页面加载时从缓存中获取上次选择的登录方式
-    const savedTab = localStorage.getItem('defaultLoginTag')
+    const savedTab = getFromLocalStorage('defaultLoginTag')
     if (savedTab) {
       this.active = savedTab
     }
@@ -101,16 +103,16 @@ export default {
     this.qrcode.redirect_uri = window.location.protocol + '//' + window.location.host + '/login'
 
     // 钉钉二维码初始化
-    if (process.env.VUE_APP_DINGTALK_CLIENT_ID !== '') {
+    if (isEnvEnabled('VUE_APP_DINGTALK_CLIENT_ID')) {
       this.ddQrcodeInit()
     }
 
     // 企业微信认证
-    if (process.env.VUE_APP_WECHAT_APP_ID !== '' && process.env.VUE_APP_WECHAT_AGENT_ID !== '') {
+    if (isEnvEnabled('VUE_APP_WECHAT_APP_ID') && isEnvEnabled('VUE_APP_WECHAT_AGENT_ID')) {
       // 认证回调
       if ('code' in query && 'appid' in query && 'state' in query) {
         // state校验
-        const storedState = localStorage.getItem('ww_state')
+        const storedState = getFromLocalStorage('ww_state')
         if (query.state !== storedState) {
           this.$message.error('请求无效')
           return false
@@ -124,11 +126,11 @@ export default {
     }
 
     // 飞书认证
-    if (process.env.VUE_APP_FEISHU_CLIENT_ID !== '') {
+    if (isEnvEnabled('VUE_APP_FEISHU_CLIENT_ID')) {
       // 认证回调
       if ('code' in query && 'byte' in query && 'state' in query) {
         // state校验
-        const storedState = localStorage.getItem('feishu_state')
+        const storedState = getFromLocalStorage('feishu_state')
         if (query.state !== storedState) {
           this.$message.error('请求无效')
           return false
@@ -138,7 +140,7 @@ export default {
       }
 
       // 二维码初始化
-      FeishuQrLogin()
+      FeishuQrLogin(query)
     }
   },
   methods: {
@@ -146,21 +148,17 @@ export default {
     /* 当用户切换Tab */
     handleTabClick(tab) {
       // 保存当前选项到localStorage
-      localStorage.setItem('defaultLoginTag', tab.name)
+      saveToLocalStorage('defaultLoginTag', tab.name)
     },
 
     /* 判断是否显示某个登录方式 */
     isShow(type) {
-      if (type === 'dd') {
-        return process.env.VUE_APP_DINGTALK_CLIENT_ID !== ''
+      const envMap = {
+        dd: process.env.VUE_APP_DINGTALK_CLIENT_ID,
+        ww: process.env.VUE_APP_WECHAT_APP_ID && process.env.VUE_APP_WECHAT_AGENT_ID,
+        feishu: process.env.VUE_APP_FEISHU_CLIENT_ID
       }
-      if (type === 'ww') {
-        return process.env.VUE_APP_WECHAT_APP_ID !== '' && process.env.VUE_APP_WECHAT_AGENT_ID !== ''
-      }
-      if (type === 'feishu') {
-        return process.env.VUE_APP_FEISHU_CLIENT_ID !== ''
-      }
-      return false
+      return !!envMap[type]
     },
 
     /* 普通登录按钮 */
@@ -222,6 +220,12 @@ export default {
         ...this.$route.query
       }
 
+      // 如果是 OAuth2.0认证，需要将本地存储的 state 参数带上
+      if ('client_id' in newForm) {
+        newForm.state = getFromLocalStorage('oauth_state')
+      }
+      console.log(newForm)
+
       this.$store.dispatch('user/get_feishu_authorize', newForm).then((res) => {
         // redirect_uri表示SSO客户端在进行单点登录认证
         if (res.redirect_uri !== undefined) {
@@ -249,16 +253,31 @@ export default {
 
     /* 企业微信二维码初始化 */
     wwQrcodeInit() {
-      // 生成随机state
+      // 授权URL请求参数设定
+      const newForm = {
+        ...this.$route.query
+      }
+
+      // 如果是 OAuth2.0认证，则将 state 参数保存至本地，然后删除 URL 中的 state 参数，防止在进行企业微信扫码时 state 参数重复
+      if ('state' in newForm) {
+        saveToLocalStorage('oauth_state', newForm.state)
+        delete newForm.state
+      }
+
+      // 重新生成 URL Query 参数
+      const searchParams = new URLSearchParams(newForm)
+
+      // 生成随机 state，用于请求企业微信后台
       const state = generateState()
-      // 将state存储到localStorage，防止回调时页面刷新导致state丢失
-      localStorage.setItem('ww_state', state)
+      // 将state存储到localStorage，防止回调时页面刷新导致 state 丢失，请求完成后需要校验
+      saveToLocalStorage('ww_state', state)
+
       // 初始化二维码
       new window.WwLogin({
         id: 'ww_login',
         appid: process.env.VUE_APP_WECHAT_APP_ID,
         agentid: process.env.VUE_APP_WECHAT_AGENT_ID,
-        redirect_uri: encodeURIComponent(this.qrcode.redirect_uri + window.location.search),
+        redirect_uri: encodeURIComponent(this.qrcode.redirect_uri + '?' + searchParams.toString()),
         state: state,
         href: `data:text/css;base64,${Base64.encode(
           `.impowerBox .title {display: none;}
@@ -273,6 +292,11 @@ export default {
       // 授权URL请求参数设定
       const newForm = {
         ...this.$route.query
+      }
+
+      // 如果是 OAuth2.0认证，需要将本地存储的 state 参数带上
+      if ('client_id' in newForm) {
+        newForm.state = getFromLocalStorage('oauth_state')
       }
 
       this.$store.dispatch('user/get_ww_authorize', newForm).then((res) => {
@@ -305,7 +329,7 @@ export default {
       // 生成随机state
       const dd_state = generateState()
       // 将state存储到localStorage，防止回调时页面刷新导致state丢失
-      localStorage.setItem('dd_state', dd_state)
+      saveToLocalStorage('dd_state', dd_state)
 
       window.DTFrameLogin(
         // 二维码容器相关参数：绑定的容器id、宽度、高度
@@ -327,7 +351,7 @@ export default {
           const { authCode, state } = loginResult
 
           // 获取请求时的state
-          const storedState = localStorage.getItem('dd_state')
+          const storedState = getFromLocalStorage('dd_state')
 
           // 判断状态是否一致
           if (storedState !== state) {

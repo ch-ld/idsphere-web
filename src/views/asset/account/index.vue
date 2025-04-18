@@ -282,9 +282,9 @@ export default {
       this.getList()
     },
 
-    /* page number的变化 */
+    /* page size的变化 */
     handleCurrentChange(newPage) {
-      this.queryParams.page = newPage
+      this.queryParams.limit = newPage
       this.getList()
     },
 

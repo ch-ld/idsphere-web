@@ -76,6 +76,7 @@
 
     <!-- 计划任务执行记录 -->
     <el-dialog
+      v-if="cronLogDialog"
       title="计划任务执行记录"
       :visible.sync="cronLogDialog"
       :show-close="true"

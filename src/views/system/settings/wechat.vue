@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h3>飞书应用</h3>
+    <h3>企业微信应用</h3>
     <el-form ref="form" :model="form" :rules="rules" :validate-on-rule-change="false" status-icon label-position="top" label-width="100px">
       <el-form-item label="Corp ID" prop="wechatCorpId">
         <el-input v-model="form.wechatCorpId" autocomplete="off" size="small" clearable style="width: 600px;" />

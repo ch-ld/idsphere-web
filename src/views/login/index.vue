@@ -47,6 +47,7 @@
 </template>
 
 <script>
+import { sdkLoaders } from '@/main'
 import { FeishuQrLogin } from '@/utils/feishu'
 import { saveToLocalStorage, getFromLocalStorage } from '@/utils/localStorage'
 import { isEnvEnabled } from '@/utils/env'
@@ -95,7 +96,7 @@ export default {
       this.active = savedTab
     }
   },
-  mounted() {
+  async mounted() {
     // 获取路由参数
     const query = this.$route.query
 
@@ -104,11 +105,17 @@ export default {
 
     // 钉钉二维码初始化
     if (isEnvEnabled('VUE_APP_DINGTALK_CLIENT_ID')) {
+      // 加载SDK
+      await sdkLoaders.dingtalk
+
       this.ddQrcodeInit()
     }
 
     // 企业微信认证
     if (isEnvEnabled('VUE_APP_WECHAT_APP_ID') && isEnvEnabled('VUE_APP_WECHAT_AGENT_ID')) {
+      // 加载SDK
+      await sdkLoaders.wework
+
       // 认证回调
       if ('code' in query && 'appid' in query && 'state' in query) {
         // state校验
@@ -127,6 +134,9 @@ export default {
 
     // 飞书认证
     if (isEnvEnabled('VUE_APP_FEISHU_CLIENT_ID')) {
+      // 加载SDK
+      await sdkLoaders.feishu
+
       // 认证回调
       if ('code' in query && 'byte' in query && 'state' in query) {
         // state校验
@@ -224,7 +234,6 @@ export default {
       if ('client_id' in newForm) {
         newForm.state = getFromLocalStorage('oauth_state')
       }
-      console.log(newForm)
 
       this.$store.dispatch('user/get_feishu_authorize', newForm).then((res) => {
         // redirect_uri表示SSO客户端在进行单点登录认证
